@@ -276,7 +276,7 @@ class Dialog_Save_Load(QDialog) :  # Dialog window for saving and loading files
         self.retranslateUi(self)
         QtCore.QMetaObject.connectSlotsByName(self)
 
-        QObject.connect(self.pushButton, SIGNAL('clicked()'), self.handlePath)
+        QObject.connect(self.pushButton, SIGNAL('clicked()'), self.handle_path)
 
     def retranslateUi(self, Dialog_Save_Load) :
         _translate = QtCore.QCoreApplication.translate
@@ -291,7 +291,7 @@ class Dialog_Save_Load(QDialog) :  # Dialog window for saving and loading files
         if self.mainWindow.saving == True or Server.server_running :
             self.checkBox.setVisible(False)
 
-    def handlePath(self) :
+    def handle_path(self) :
         path = self.textEdit.toPlainText( )
         if path[-4 :] == ".xml" :
             if self.mainWindow.loading :
@@ -303,7 +303,7 @@ class Dialog_Save_Load(QDialog) :  # Dialog window for saving and loading files
                         self.mainWindow.animate = True
                     else :
                         self.mainWindow.animate = False
-                    self.mainWindow.loadGame(path)
+                    self.mainWindow.load_game(path)
                     self.label_3.setVisible(True)
                     self.label_3.setText('File loaded')
 
@@ -313,7 +313,7 @@ class Dialog_Save_Load(QDialog) :  # Dialog window for saving and loading files
                         '"<html><head/><body><p><span style=\" color:#ff0000;\">File doesn\'t exist</span></p></body></html>"')
 
             elif self.mainWindow.saving :
-                self.mainWindow.saveGame(path)
+                self.mainWindow.save_game(path)
                 self.label_3.setVisible(True)
                 self.label_3.setText('File saved')
 
@@ -377,7 +377,7 @@ class Dialog(QDialog) :  # Dialog window after clicking on "options" in the menu
 
     def setMapSize(self) :
         self.mainWindow.playground_size = int(self.mapSpinBox.text( ))
-        self.mainWindow.newGame( )
+        self.mainWindow.new_game( )
 
     def setServer(self) :
         Server.server = self.ipTextEdit.toPlainText( )
@@ -690,15 +690,15 @@ class Ui_MainWindow(object) :
         self.DownRightButton = QtWidgets.QPushButton(self.centralwidget)
         self.DownRightButton.setGeometry(QtCore.QRect(170, 180, 93, 41))
         self.DownRightButton.setObjectName("DownRightButton")
-        self.NewGameButton = QtWidgets.QPushButton(self.centralwidget)
-        self.NewGameButton.setGeometry(QtCore.QRect(40, 260, 221, 41))
-        self.NewGameButton.setObjectName("NewGameButton")
-        self.SaveGameButton = QtWidgets.QPushButton(self.centralwidget)
-        self.SaveGameButton.setGeometry(QtCore.QRect(40, 310, 221, 41))
-        self.SaveGameButton.setObjectName("SaveGameButton")
-        self.LoadGameButton = QtWidgets.QPushButton(self.centralwidget)
-        self.LoadGameButton.setGeometry(QtCore.QRect(40, 360, 221, 41))
-        self.LoadGameButton.setObjectName("LoadGameButton")
+        self.new_gameButton = QtWidgets.QPushButton(self.centralwidget)
+        self.new_gameButton.setGeometry(QtCore.QRect(40, 260, 221, 41))
+        self.new_gameButton.setObjectName("new_gameButton")
+        self.save_gameButton = QtWidgets.QPushButton(self.centralwidget)
+        self.save_gameButton.setGeometry(QtCore.QRect(40, 310, 221, 41))
+        self.save_gameButton.setObjectName("save_gameButton")
+        self.load_gameButton = QtWidgets.QPushButton(self.centralwidget)
+        self.load_gameButton.setGeometry(QtCore.QRect(40, 360, 221, 41))
+        self.load_gameButton.setObjectName("load_gameButton")
         self.GameHistoryTextEdit = QtWidgets.QTextEdit(self.centralwidget)
         self.GameHistoryTextEdit.setGeometry(QtCore.QRect(40, 460, 221, 221))
         self.GameHistoryTextEdit.setObjectName("GameHistoryTextEdit")
@@ -764,9 +764,9 @@ class Ui_MainWindow(object) :
         self.RightButton.setText(_translate("2048 Hex", "Right"))
         self.DownLeftButton.setText(_translate("2048 Hex", "Down Left"))
         self.DownRightButton.setText(_translate("2048 Hex", "Down Right"))
-        self.NewGameButton.setText(_translate("2048 Hex", "New game"))
-        self.SaveGameButton.setText(_translate("2048 Hex", "Save Game"))
-        self.LoadGameButton.setText(_translate("2048 Hex", "Load Game"))
+        self.new_gameButton.setText(_translate("2048 Hex", "New game"))
+        self.save_gameButton.setText(_translate("2048 Hex", "Save Game"))
+        self.load_gameButton.setText(_translate("2048 Hex", "Load Game"))
         self.GameHistoryLabel.setText(_translate("2048 Hex", "Game history"))
         self.menuOptions.setTitle(_translate("2048 Hex", "Options"))
         self.menuLAN_game.setTitle(_translate("2048 Hex", "LAN game"))
@@ -784,7 +784,7 @@ class MainWindow(QMainWindow,
         self.setupUi(self)
 
         self.solo_game = True
-        self.lan_game = False
+        self.is_lan_game = False
         self.server_on = False
         self.is_connected = False
         self.playground_size = 3
@@ -803,24 +803,24 @@ class MainWindow(QMainWindow,
         self.saving = False
         self.loading = False
 
-        QMenuBar.connect(self.menuOptions, SIGNAL('aboutToShow()'), self.showDialog)
-        QMenuBar.connect(self.menuLAN_game, SIGNAL('aboutToShow()'), self.lanGame)
-        QMenuBar.connect(self.menuSingle_game, SIGNAL('aboutToShow()'), self.playSingle)
-        QMenuBar.connect(self.menuOffline_game, SIGNAL('aboutToShow()'), self.playOffline)
-        QMenuBar.connect(self.menuConnect_with_2nd_player, SIGNAL('aboutToShow()'), self.connectOnline)
-        QMenuBar.connect(self.menuUndo1, SIGNAL('aboutToShow()'), lambda : self.undoMove(0))
-        QMenuBar.connect(self.menuUndo2, SIGNAL('aboutToShow()'), lambda : self.undoMove(1))
+        QMenuBar.connect(self.menuOptions, SIGNAL('aboutToShow()'), self.show_dialog)
+        QMenuBar.connect(self.menuLAN_game, SIGNAL('aboutToShow()'), self.lan_game)
+        QMenuBar.connect(self.menuSingle_game, SIGNAL('aboutToShow()'), self.play_single)
+        QMenuBar.connect(self.menuOffline_game, SIGNAL('aboutToShow()'), self.play_offline)
+        QMenuBar.connect(self.menuConnect_with_2nd_player, SIGNAL('aboutToShow()'), self.connect_online)
+        QMenuBar.connect(self.menuUndo1, SIGNAL('aboutToShow()'), lambda : self.undo_move(0))
+        QMenuBar.connect(self.menuUndo2, SIGNAL('aboutToShow()'), lambda : self.undo_move(1))
 
-        QObject.connect(self.NewGameButton, SIGNAL('clicked()'), self.newGame)
-        QObject.connect(self.SaveGameButton, SIGNAL('clicked()'), self.showSaveDialog)
-        QObject.connect(self.LoadGameButton, SIGNAL('clicked()'), self.showLoadDialog)
+        QObject.connect(self.new_gameButton, SIGNAL('clicked()'), self.new_game)
+        QObject.connect(self.save_gameButton, SIGNAL('clicked()'), self.show_save_dialog)
+        QObject.connect(self.load_gameButton, SIGNAL('clicked()'), self.show_load_dialog)
 
-        QObject.connect(self.UpLeftButton, SIGNAL('clicked()'), lambda : self.moveInstruction(0))
-        QObject.connect(self.UpRightButton, SIGNAL('clicked()'), lambda : self.moveInstruction(1))
-        QObject.connect(self.LeftButton, SIGNAL('clicked()'), lambda : self.moveInstruction(2))
-        QObject.connect(self.RightButton, SIGNAL('clicked()'), lambda : self.moveInstruction(3))
-        QObject.connect(self.DownLeftButton, SIGNAL('clicked()'), lambda : self.moveInstruction(4))
-        QObject.connect(self.DownRightButton, SIGNAL('clicked()'), lambda : self.moveInstruction(5))
+        QObject.connect(self.UpLeftButton, SIGNAL('clicked()'), lambda : self.move_instruction(0))
+        QObject.connect(self.UpRightButton, SIGNAL('clicked()'), lambda : self.move_instruction(1))
+        QObject.connect(self.LeftButton, SIGNAL('clicked()'), lambda : self.move_instruction(2))
+        QObject.connect(self.RightButton, SIGNAL('clicked()'), lambda : self.move_instruction(3))
+        QObject.connect(self.DownLeftButton, SIGNAL('clicked()'), lambda : self.move_instruction(4))
+        QObject.connect(self.DownRightButton, SIGNAL('clicked()'), lambda : self.move_instruction(5))
 
         self.key_pressed = {"player1" : [0 for _ in range(4)], "player2" : [0 for _ in range(4)]}
         self.movement_keys = {"player1" : [Qt.Key_W, Qt.Key_S, Qt.Key_A, Qt.Key_D],
@@ -833,47 +833,47 @@ class MainWindow(QMainWindow,
         self.timer = QTimer(self)
         self.xmlhandler = XMLhandler()
 
-    def showSaveDialog(self) :
+    def show_save_dialog(self) :
         self.loading = False
         self.saving = True
         dialog = Dialog_Save_Load(self)
         dialog.show( )
         dialog.exec_( )
 
-    def showLoadDialog(self) :
+    def show_load_dialog(self) :
         self.loading = True
         self.saving = False
         dialog = Dialog_Save_Load(self)
         dialog.show( )
         dialog.exec_( )
 
-    def playSingle(self) :
+    def play_single(self) :
         self.Turn1.setText("")
         self.Turn2.setText("")
         Server.server_running = False
         self.solo_game = True
-        self.lan_game = False
+        self.is_lan_game = False
         self.is_connected = False
         self.Score1_1.setText("0")
         self.Score2_1.setText("0")
         self.GameHistoryTextEdit.clear( )
         self.turn = 'A'
         self.first_turn = 'A'
-        self.__newGameHistory( )
+        self.__new_gameHistory( )
         try :
             self.scene_right.clear( )
         except :
             pass
         self.create_left_offline_scene( )
 
-    def __newGameHistory(self) :
+    def __new_gameHistory(self) :
         self.starting_position = [
             {"id" : [], "num" : [], "centerx" : [], "centery" : [], "x" : [], "y" : [], "map_size" : []} for _ in range(2)]
         self.moves_history = [[], []]
         self.score_history = [[], []]
         self.random_elements = [[], []]
 
-    def undoMove(self, player_num) :
+    def undo_move(self, player_num) :
         try :
             ref_player = "player" + str(player_num + 1)
 
@@ -936,16 +936,16 @@ class MainWindow(QMainWindow,
             pass
             #print("Info: You need to be in \"multiplayer\" mode to do this action")
 
-    def saveGame(self, path) :
-        if self.lan_game :
+    def save_game(self, path) :
+        if self.is_lan_game :
             x = self.n.send_string("save" + path)
         else :
             self.xmlhandler.define_data(self.first_turn, self.starting_position, self.moves_history, self.random_elements, self.score_history)
             num_of_players = 1 if self.solo_game else 2
             self.xmlhandler.save(False, num_of_players, path)
 
-    def loadGame(self, path) :
-        if self.lan_game :
+    def load_game(self, path) :
+        if self.is_lan_game :
             x = self.n.send_string("load" + path)
         else :
 
@@ -1046,7 +1046,7 @@ class MainWindow(QMainWindow,
 
                     turn = 1 if (len(self.moves_history[0]) + len(self.moves_history[1]) + player1_starts) % 2 else 0
                     self.turn = 'A' if turn else 'B'
-                    self.setTurnText(self.turn == 'A')
+                    self.set_turn_text(self.turn == 'A')
                 else :
                     self.animation_turn = player1_starts
                     self.animation_counter = [0, 0]
@@ -1054,7 +1054,7 @@ class MainWindow(QMainWindow,
                     def show_moves_multiplayer(timer) :
                         if self.animation_turn :
                             try :
-                                self.setTurnText(False)
+                                self.set_turn_text(False)
                                 self.playground_left.move(int(self.moves_history[0][self.animation_counter[0]]),
                                                           int(self.random_elements[0][self.animation_counter[0]]))
                                 self.Score1_1.setText(str(self.score_history[0][self.animation_counter[0]]))
@@ -1068,7 +1068,7 @@ class MainWindow(QMainWindow,
                             self.animation_turn = not self.animation_turn
                         else :
                             try :
-                                self.setTurnText(True)
+                                self.set_turn_text(True)
                                 self.playground_right.move(int(self.moves_history[1][self.animation_counter[1]]),
                                                            int(self.random_elements[1][self.animation_counter[1]]))
                                 self.Score2_1.setText(str(self.score_history[1][self.animation_counter[1]]))
@@ -1085,7 +1085,7 @@ class MainWindow(QMainWindow,
                     self.connect(self.timer, SIGNAL("timeout()"), lambda : show_moves_multiplayer(self.timer))
                     self.timer.start(1000)
 
-    def lanGame(self) :
+    def lan_game(self) :
         if not self.server_on :
             self.server_on = True
             try :
@@ -1095,7 +1095,7 @@ class MainWindow(QMainWindow,
             except OSError :
                 pass
             try :
-                self.lan_game = True
+                self.is_lan_game = True
                 self.solo_game = False
                 try :
                     self.scene_right.clear( )
@@ -1116,13 +1116,13 @@ class MainWindow(QMainWindow,
                 self.update_playground_from_server(serv_elems, "left")
                 self.graphicsView1.setScene(self.scene_left)
             except TypeError :
-                self.lan_game = False
+                self.is_lan_game = False
                 self.solo_game = True
                 #print("Info: Server not running")
         else :
             pass
 
-    def addOponentLog(self) :
+    def add_oponent_log(self) :
         oponent_move = int(self.n.send_string("getoponentmove"))
         if oponent_move == 0 :
             self.GameHistoryTextEdit.append("<b style=\"color:#800000;\">B: Upper-left</b>")
@@ -1137,7 +1137,7 @@ class MainWindow(QMainWindow,
         elif oponent_move == 5 :
             self.GameHistoryTextEdit.append("<b style=\"color:#800000;\">B: Down-right</b>")
 
-    def setTurnText(self, condition) :
+    def set_turn_text(self, condition) :
         if condition :
             self.Turn1.setVisible(True)
             self.Turn2.setVisible(False)
@@ -1175,20 +1175,20 @@ class MainWindow(QMainWindow,
             self.Score2_1.setText(str(serv_elems["score"]))
             self.graphicsView2.setScene(self.scene_right)
 
-    def showDialog(self) :
+    def show_dialog(self) :
         dialog = Dialog(self)
         dialog.show( )
         dialog.exec_( )
 
-    def connectOnline(self) :
+    def connect_online(self) :
         try :
             self.is_connected = True
             condition = (self.turn == self.player)
-            self.setTurnText(condition)
+            self.set_turn_text(condition)
             self.GameHistoryTextEdit.clear( )
             loop = QEventLoop( )
             while self.is_connected and Server.server_running :
-                self.playOnline( )
+                self.play_online( )
                 QTimer.singleShot(2000, loop.quit)
                 loop.exec_( )
             self.GameHistoryTextEdit.append(
@@ -1197,27 +1197,27 @@ class MainWindow(QMainWindow,
         except AttributeError :
             self.GameHistoryTextEdit.append("Info: Not connected to server")
 
-    def playOnline(self) :
+    def play_online(self) :
         try :
             self.update_playground_from_server(self.n.send("get"), "left")
             self.update_playground_from_server(self.n.send("online"), "right")
             turn_buf = int(self.n.send_string("getturn"))
             if turn_buf != self.turn :
-                self.addOponentLog( )
+                self.add_oponent_log( )
             self.turn = turn_buf
             condition = self.turn == self.player
-            self.setTurnText(condition)
+            self.set_turn_text(condition)
         except :
             self.threadpool.releaseThread( )
 
-    def playOffline(self) :
+    def play_offline(self) :
         Server.server_running = False
-        self.lan_game = False
+        self.is_lan_game = False
         self.is_connected = False
         self.first_turn = 'A'
         self.turn = self.first_turn
 
-        self.__newGameHistory( )
+        self.__new_gameHistory( )
 
         self.GameHistoryTextEdit.clear( )
         self.Score1_1.setText("0")
@@ -1225,7 +1225,7 @@ class MainWindow(QMainWindow,
         self.solo_game = False
         self.create_left_offline_scene( )
         self.create_right_offline_scene( )
-        self.setTurnText(True)
+        self.set_turn_text(True)
 
     def create_left_offline_scene(self) :
         self.scene_left = QGraphicsScene( )
@@ -1259,15 +1259,15 @@ class MainWindow(QMainWindow,
         self.scene_right.addItem(Node(self.center, *self.center, None, self.playground_size))
         self.graphicsView2.setScene(self.scene_right)
 
-    def newGame(self) :
+    def new_game(self) :
         if not self.solo_game :
-            self.setTurnText(True)
+            self.set_turn_text(True)
             self.first_turn = 'A'
             self.turn = self.first_turn
 
-        self.__newGameHistory( )
+        self.__new_gameHistory( )
         self.GameHistoryTextEdit.clear( )
-        if not self.lan_game :
+        if not self.is_lan_game :
             self.create_left_offline_scene( )
             if not self.solo_game :
                 self.create_right_offline_scene( )
@@ -1278,8 +1278,8 @@ class MainWindow(QMainWindow,
             serv_elems = self.n.send("get")
             self.update_playground_from_server(serv_elems, "left")
 
-    def moveInstruction(self, num) :
-        if self.lan_game :
+    def move_instruction(self, num) :
+        if self.is_lan_game :
             move_condition = True if self.turn == self.player else False
         else :
             move_condition = True if self.turn == 'A' or self.solo_game else False
@@ -1289,7 +1289,7 @@ class MainWindow(QMainWindow,
 
             if num == 0 :
                 self.GameHistoryTextEdit.append("<b style=\"color:#407294;\">A: Upper-left</b>")
-                if self.lan_game :
+                if self.is_lan_game :
                     self.update_playground_from_server(self.n.send("0"), "left")
                     self.turn = not self.turn
                 else :
@@ -1297,13 +1297,13 @@ class MainWindow(QMainWindow,
                     self.Score1_1.setText(str(self.playground_left.score))
                     self.turn = 'B'
                     if not self.solo_game :
-                        self.setTurnText(self.turn == 'A')
+                        self.set_turn_text(self.turn == 'A')
                 self.moves_history[0].append(0)
                 self.score_history[0].append(self.playground_left.score)
                 self.random_elements[0].append(self.playground_left.random_element)
             elif num == 1 :
                 self.GameHistoryTextEdit.append("<b style=\"color:#407294;\">A: Upper-right</b>")
-                if self.lan_game :
+                if self.is_lan_game :
                     self.update_playground_from_server(self.n.send("1"), "left")
                     self.turn = not self.turn
                 else :
@@ -1311,13 +1311,13 @@ class MainWindow(QMainWindow,
                     self.Score1_1.setText(str(self.playground_left.score))
                     self.turn = 'B'
                     if not self.solo_game :
-                        self.setTurnText(self.turn == 'A')
+                        self.set_turn_text(self.turn == 'A')
                 self.moves_history[0].append(1)
                 self.score_history[0].append(self.playground_left.score)
                 self.random_elements[0].append(self.playground_left.random_element)
             elif num == 4 :
                 self.GameHistoryTextEdit.append("<b style=\"color:#407294;\">A: Down-left</b>")
-                if self.lan_game :
+                if self.is_lan_game :
                     self.update_playground_from_server(self.n.send("4"), "left")
                     self.turn = not self.turn
                 else :
@@ -1325,13 +1325,13 @@ class MainWindow(QMainWindow,
                     self.Score1_1.setText(str(self.playground_left.score))
                     self.turn = 'B'
                     if not self.solo_game :
-                        self.setTurnText(self.turn == 'A')
+                        self.set_turn_text(self.turn == 'A')
                 self.moves_history[0].append(4)
                 self.score_history[0].append(self.playground_left.score)
                 self.random_elements[0].append(self.playground_left.random_element)
             elif num == 5 :
                 self.GameHistoryTextEdit.append("<b style=\"color:#407294;\">A: Down-right</b>")
-                if self.lan_game :
+                if self.is_lan_game :
                     self.update_playground_from_server(self.n.send("5"), "left")
                     self.turn = not self.turn
                 else :
@@ -1339,13 +1339,13 @@ class MainWindow(QMainWindow,
                     self.Score1_1.setText(str(self.playground_left.score))
                     self.turn = 'B'
                     if not self.solo_game :
-                        self.setTurnText(self.turn == 'A')
+                        self.set_turn_text(self.turn == 'A')
                 self.moves_history[0].append(5)
                 self.score_history[0].append(self.playground_left.score)
                 self.random_elements[0].append(self.playground_left.random_element)
             elif num == 2 :
                 self.GameHistoryTextEdit.append("<b style=\"color:#407294;\">A: Left</b>")
-                if self.lan_game :
+                if self.is_lan_game :
                     self.update_playground_from_server(self.n.send("2"), "left")
                     self.turn = not self.turn
                 else :
@@ -1353,13 +1353,13 @@ class MainWindow(QMainWindow,
                     self.Score1_1.setText(str(self.playground_left.score))
                     self.turn = 'B'
                     if not self.solo_game :
-                        self.setTurnText(self.turn == 'A')
+                        self.set_turn_text(self.turn == 'A')
                 self.moves_history[0].append(2)
                 self.score_history[0].append(self.playground_left.score)
                 self.random_elements[0].append(self.playground_left.random_element)
             elif num == 3 :
                 self.GameHistoryTextEdit.append("<b style=\"color:#407294;\">A: Right</b>")
-                if self.lan_game :
+                if self.is_lan_game :
                     self.update_playground_from_server(self.n.send("3"), "left")
                     self.turn = not self.turn
                 else :
@@ -1367,7 +1367,7 @@ class MainWindow(QMainWindow,
                     self.Score1_1.setText(str(self.playground_left.score))
                     self.turn = 'B'
                     if not self.solo_game :
-                        self.setTurnText(self.turn == 'A')
+                        self.set_turn_text(self.turn == 'A')
                 self.moves_history[0].append(3)
                 self.score_history[0].append(self.playground_left.score)
                 self.random_elements[0].append(self.playground_left.random_element)
@@ -1377,7 +1377,7 @@ class MainWindow(QMainWindow,
             self.close( )
 
         try :
-            if self.lan_game :
+            if self.is_lan_game :
                 move_condition = True if self.turn == self.player else False
             else :
                 move_condition = True if self.turn == 'A' or self.solo_game else False
@@ -1393,17 +1393,17 @@ class MainWindow(QMainWindow,
                     self.key_pressed["player1"][2] = 1
 
                 if self.key_pressed["player1"][0] and self.key_pressed["player1"][1] :
-                    self.moveInstruction(0)
+                    self.move_instruction(0)
                 elif self.key_pressed["player1"][0] and self.key_pressed["player1"][3] :
-                    self.moveInstruction(1)
+                    self.move_instruction(1)
                 elif self.key_pressed["player1"][2] and self.key_pressed["player1"][1] :
-                    self.moveInstruction(4)
+                    self.move_instruction(4)
                 elif self.key_pressed["player1"][2] and self.key_pressed["player1"][3] :
-                    self.moveInstruction(5)
+                    self.move_instruction(5)
                 elif self.key_pressed["player1"][1] :
-                    self.moveInstruction(2)
+                    self.move_instruction(2)
                 elif self.key_pressed["player1"][3] :
-                    self.moveInstruction(3)
+                    self.move_instruction(3)
                 self.Score1_1.setText(str(self.playground_left.score))
 
             if self.playground_right :
@@ -1423,7 +1423,7 @@ class MainWindow(QMainWindow,
                         self.playground_right.move(0)
                         self.turn = 'A'
                         if not self.solo_game :
-                            self.setTurnText(self.turn == 'A')
+                            self.set_turn_text(self.turn == 'A')
                         self.moves_history[1].append(0)
                         self.score_history[1].append(self.playground_right.score)
                         self.random_elements[1].append(self.playground_right.random_element)
@@ -1433,7 +1433,7 @@ class MainWindow(QMainWindow,
                         self.playground_right.move(1)
                         self.turn = 'A'
                         if not self.solo_game :
-                            self.setTurnText(self.turn == 'A')
+                            self.set_turn_text(self.turn == 'A')
                         self.moves_history[1].append(1)
                         self.score_history[1].append(self.playground_right.score)
                         self.random_elements[1].append(self.playground_right.random_element)
@@ -1443,7 +1443,7 @@ class MainWindow(QMainWindow,
                         self.playground_right.move(4)
                         self.turn = 'A'
                         if not self.solo_game :
-                            self.setTurnText(self.turn == 'A')
+                            self.set_turn_text(self.turn == 'A')
                         self.moves_history[1].append(4)
                         self.score_history[1].append(self.playground_right.score)
                         self.random_elements[1].append(self.playground_right.random_element)
@@ -1453,7 +1453,7 @@ class MainWindow(QMainWindow,
                         self.playground_right.move(5)
                         self.turn = 'A'
                         if not self.solo_game :
-                            self.setTurnText(self.turn == 'A')
+                            self.set_turn_text(self.turn == 'A')
                         self.moves_history[1].append(5)
                         self.score_history[1].append(self.playground_right.score)
                         self.random_elements[1].append(self.playground_right.random_element)
@@ -1463,7 +1463,7 @@ class MainWindow(QMainWindow,
                         self.playground_right.move(2)
                         self.turn = 'A'
                         if not self.solo_game :
-                            self.setTurnText(self.turn == 'A')
+                            self.set_turn_text(self.turn == 'A')
                         self.moves_history[1].append(2)
                         self.score_history[1].append(self.playground_right.score)
                         self.random_elements[1].append(self.playground_right.random_element)
@@ -1473,7 +1473,7 @@ class MainWindow(QMainWindow,
                         self.playground_right.move(3)
                         self.turn = 'A'
                         if not self.solo_game :
-                            self.setTurnText(self.turn == 'A')
+                            self.set_turn_text(self.turn == 'A')
                         self.moves_history[1].append(3)
                         self.score_history[1].append(self.playground_right.score)
                         self.random_elements[1].append(self.playground_right.random_element)
